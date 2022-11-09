@@ -22,13 +22,13 @@ def index(request):
 
 def entry(request, title):
 
-    content = markdown2.markdown(util.get_entry(title))
+    content = util.get_entry(title)
 
     if content == None:
         return render(request, "encyclopedia/error.html")
     else:
         return render(request, "encyclopedia/entry.html", {
-            "stuff": content,
+            "stuff": markdown2.markdown(content),
             "title": title
         })
 
