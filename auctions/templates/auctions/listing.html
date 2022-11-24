@@ -1,0 +1,68 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <div>
+        <h1>Listing: {{ auction.title }}</h1>
+        {% if user.is_authenticated %}
+            <form action="/watchlist/{{ auction.pk }}" method="post">
+                {% csrf_token %}
+                <input style="background-color:rgb(184, 184, 184);border:none;border-radius:5px;color:aliceblue;" type="submit" value="{% if user in auction.watchers.all %}Remove from Watchlist{% else %}add to watchlist{% endif %}">
+            </form>
+        {% else %}
+        <a href="/login" style="background-color:rgb(184, 184, 184);border-radius:5px;padding:1px 8px 3px 8px;color:aliceblue;">watchlist</a>
+        {% endif %}
+        <img src="{{ auction.image_url }}" style="display:block; margin:15px; max-height:500px; object-fit: contain;">
+        <p>{{ auction.description }}</p>
+        {% if auction.bids.all.last %}
+        <h1>${{ auction.bids.all.last.price }}</h1>
+        {% else %}
+        <h1>${{ auction.starting_price }}</h1>
+        {% endif %}
+        {% if user.is_authenticated %}
+        {% if error %}
+        <div><b>Your Bid is invalid</b></div>
+        {% endif %}
+        <div>{{ auction.bids.all.count }} bid(s) so far. {% if auction.bids.all.last.bidder == user %}your bid is the current bid.{% endif %}</div>
+        <form action="/bidding/{{ auction.pk }}" method="post">
+            {% csrf_token %}
+            {{ bid_form }}
+            <input type="submit" value="Place Bid">
+        </form>
+        {% endif %}
+        <div>
+            <h1>Details</h1>
+            <ul>
+                <li>Listed by: {{ auction.seller }}</li>
+                <li>Category: {{ auction.category }}</li>
+                <li>Created on: {{ auction.date_time }}</li>
+            </ul>
+        </div>
+        <h1>Comments</h1>
+        {% if auction.comments.all %}
+            {% for comments in auction.comments.all %}
+            <p><b>{{ comments.user }}:</b> {{ comments.comment }}</p>
+            {% endfor %}
+        {% else %}
+        <p>No comment found for this listing</p>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <h1>Add Comment</h1>
+        <form action="/commenting/{{ auction.pk }}" method="post">
+            {% csrf_token %}
+            {{ comment_form }}
+            <input type="submit" value="Add Comment">
+        </form>
+        {% endif %}
+        {% if auction.is_active %}
+            {% if user.is_authenticated and auction.seller == user %}
+                <h1>For listing owner only:</h1>
+                <form action="/close/{{ auction.pk }}" method="post">
+                    {% csrf_token %}
+                    <input type="submit" value="Close listing">
+                </form>
+            {% endif %}
+        {% elif user == auction.bids.all.last.bidder %}
+                <h1>{{ auction.bids.all.last.bidder }}, You won!</h1>
+        {% endif %}
+    </div>
+{% endblock %}
