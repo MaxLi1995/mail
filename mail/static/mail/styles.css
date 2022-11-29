@@ -1,0 +1,10 @@
+textarea {
+    min-height: 400px;
+}
+
+.emails {
+    width:inherit;
+    color: black;
+    text-decoration: none;
+}
+
